@@ -58,6 +58,17 @@ app.include_router(transcription_router)
 app.include_router(notifications_router)
 app.include_router(dashboard_router)
 
+@app.get("/", tags=["Root"])
+def root():
+    return {
+        "app": "Smart Call Reminder API",
+        "version": "1.0.0",
+        "status": "healthy",
+        "documentation": "/docs",
+        "health_check": "/api/health",
+        "message": "Backend API is running. Launch the frontend at http://localhost:5173 to access the user interface."
+    }
+
 @app.get("/api/health", tags=["Health"])
 def health_check():
     return {
