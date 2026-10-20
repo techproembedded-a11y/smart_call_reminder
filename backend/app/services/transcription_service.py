@@ -81,7 +81,8 @@ async def transcribe_audio_file(file_path: Path) -> Dict[str, Any]:
                         files={"file": (file_path.name, f, "audio/webm")},
                         data={
                             "model": "whisper-large-v3",
-                            "temperature": "0.0"
+                            "temperature": "0.0",
+                            "prompt": "Tamil and English voice reminder notes. தமிழ், English, Tanglish. Example: Call Ravi tomorrow at 10 AM, கொட்டேஷன் அனுப்பணும்."
                         }
                     )
                 if response.status_code == 200:
@@ -102,7 +103,10 @@ async def transcribe_audio_file(file_path: Path) -> Dict[str, Any]:
                         "https://api.openai.com/v1/audio/transcriptions",
                         headers={"Authorization": f"Bearer {openai_key}"},
                         files={"file": (file_path.name, f, "audio/webm")},
-                        data={"model": "whisper-1"}
+                        data={
+                            "model": "whisper-1",
+                            "prompt": "Tamil and English voice reminder notes. தமிழ், English, Tanglish."
+                        }
                     )
                 if response.status_code == 200:
                     data = response.json()
