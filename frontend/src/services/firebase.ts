@@ -12,6 +12,15 @@ export interface FirebaseConfig {
 
 const STORAGE_KEY = 'smart_call_firebase_config';
 
+const DEFAULT_FIREBASE_CONFIG: FirebaseConfig = {
+  apiKey: "AIzaSyBXgNdcMEhCCkRGdXIgJyykvjyh3xdaxGs",
+  authDomain: "smart-call-reminder.firebaseapp.com",
+  projectId: "smart-call-reminder",
+  storageBucket: "smart-call-reminder.firebasestorage.app",
+  messagingSenderId: "1007504571178",
+  appId: "1:1007504571178:web:42fc4f54b8264728087c53",
+};
+
 export function getStoredFirebaseConfig(): FirebaseConfig | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -36,7 +45,7 @@ export function getStoredFirebaseConfig(): FirebaseConfig | null {
     };
   }
 
-  return null;
+  return DEFAULT_FIREBASE_CONFIG;
 }
 
 export function saveStoredFirebaseConfig(config: FirebaseConfig): void {
