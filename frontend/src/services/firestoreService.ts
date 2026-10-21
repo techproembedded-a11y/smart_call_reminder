@@ -25,6 +25,19 @@ function calculateAutoPriority(dueStr: string): PriorityType {
   return '5_day';
 }
 
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms = 5000,
+  errorMsg = 'Firestore request timed out. Please ensure Firestore Database is enabled in Firebase Console.'
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(errorMsg)), ms)
+    ),
+  ]);
+}
+
 function getDbOrThrow() {
   const db = getFirebaseDb();
   if (!db) {
@@ -47,7 +60,7 @@ export const firestoreService = {
     const db = getDbOrThrow();
     const remindersRef = collection(db, 'reminders');
     const q = query(remindersRef, orderBy('created_at', 'desc'));
-    const snapshot = await getDocs(q);
+    const snapshot = await withTimeout(getDocs(q));
 
     let reminders: Reminder[] = [];
     snapshot.forEach((d) => {
@@ -124,14 +137,14 @@ export const firestoreService = {
     };
 
     const docRef = doc(db, 'reminders', String(id));
-    await setDoc(docRef, newReminder);
+    await withTimeout(setDoc(docRef, newReminder));
     return newReminder;
   },
 
   async getReminder(id: number): Promise<Reminder> {
     const db = getDbOrThrow();
     const docRef = doc(db, 'reminders', String(id));
-    const snap = await getDoc(docRef);
+    const snap = await withTimeout(getDoc(docRef));
     if (!snap.exists()) {
       throw new Error(`Reminder ${id} not found in Firestore`);
     }
@@ -141,7 +154,7 @@ export const firestoreService = {
   async updateReminder(id: number, payload: ReminderUpdate): Promise<Reminder> {
     const db = getDbOrThrow();
     const docRef = doc(db, 'reminders', String(id));
-    const snap = await getDoc(docRef);
+    const snap = await withTimeout(getDoc(docRef));
     if (!snap.exists()) {
       throw new Error(`Reminder ${id} not found`);
     }
@@ -160,7 +173,7 @@ export const firestoreService = {
       updated.completed_at = payload.completed ? nowIso : null;
     }
 
-    await updateDoc(docRef, updated as any);
+    await withTimeout(updateDoc(docRef, updated as any));
     return updated;
   },
 
@@ -171,7 +184,7 @@ export const firestoreService = {
   async deleteReminder(id: number): Promise<void> {
     const db = getDbOrThrow();
     const docRef = doc(db, 'reminders', String(id));
-    await deleteDoc(docRef);
+    await withTimeout(deleteDoc(docRef));
   },
 
   // ===================== CALLS =====================
@@ -179,7 +192,7 @@ export const firestoreService = {
     const db = getDbOrThrow();
     const callsRef = collection(db, 'calls');
     const q = query(callsRef, orderBy('created_at', 'desc'));
-    const snapshot = await getDocs(q);
+    const snapshot = await withTimeout(getDocs(q));
 
     let calls: CallRecord[] = [];
     snapshot.forEach((d) => {
@@ -211,14 +224,14 @@ export const firestoreService = {
     };
 
     const docRef = doc(db, 'calls', String(id));
-    await setDoc(docRef, newCall);
+    await withTimeout(setDoc(docRef, newCall));
     return newCall;
   },
 
   async getCall(id: number): Promise<CallRecord> {
     const db = getDbOrThrow();
     const docRef = doc(db, 'calls', String(id));
-    const snap = await getDoc(docRef);
+    const snap = await withTimeout(getDoc(docRef));
     if (!snap.exists()) {
       throw new Error(`Call record ${id} not found`);
     }
@@ -228,7 +241,7 @@ export const firestoreService = {
   async updateCall(id: number, payload: Partial<CallRecordCreate>): Promise<CallRecord> {
     const db = getDbOrThrow();
     const docRef = doc(db, 'calls', String(id));
-    const snap = await getDoc(docRef);
+    const snap = await withTimeout(getDoc(docRef));
     if (!snap.exists()) {
       throw new Error(`Call record ${id} not found`);
     }
@@ -240,14 +253,14 @@ export const firestoreService = {
       updated_at: new Date().toISOString(),
     };
 
-    await updateDoc(docRef, updated as any);
+    await withTimeout(updateDoc(docRef, updated as any));
     return updated;
   },
 
   async deleteCall(id: number): Promise<void> {
     const db = getDbOrThrow();
     const docRef = doc(db, 'calls', String(id));
-    await deleteDoc(docRef);
+    await withTimeout(deleteDoc(docRef));
   },
 
   // ===================== DASHBOARD & STATS =====================

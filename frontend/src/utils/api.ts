@@ -125,7 +125,11 @@ export const api = {
     limit?: number;
   } = {}) => {
     if (isFirebaseConfigured()) {
-      return firestoreService.getReminders(params);
+      try {
+        return await firestoreService.getReminders(params);
+      } catch (err) {
+        console.warn('Firestore getReminders failed, falling back to backend:', err);
+      }
     }
     const q = new URLSearchParams();
     if (params.priority) q.set('priority', params.priority);
@@ -140,7 +144,15 @@ export const api = {
   },
   createReminder: async (payload: ReminderCreate) => {
     if (isFirebaseConfigured()) {
-      return firestoreService.createReminder(payload);
+      try {
+        return await firestoreService.createReminder(payload);
+      } catch (err) {
+        console.warn('Firestore createReminder failed, falling back to backend:', err);
+        return request<Reminder>('/reminders', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
     }
     return request<Reminder>('/reminders', {
       method: 'POST',
